@@ -5,13 +5,18 @@
 # Resource Pack Guide: https://jamesachambers.com/minecraft-bedrock-server-resource-pack-guide/
 #
 # To run the setup script use:
-# curl https://raw.githubusercontent.com/TheRemote/MinecraftBedrockServer/master/SetupMinecraft.sh | bash
+# curl https://raw.githubusercontent.com/wertie3020/MinecraftBedrockServer/autocommand/SetupMinecraft.sh | bash
 #
 # GitHub Repository: https://github.com/TheRemote/MinecraftBedrockServer
 
 echo "Minecraft Bedrock Server installation script by James A. Chambers"
 echo "Latest version always at https://github.com/TheRemote/MinecraftBedrockServer"
 echo "Don't forget to set up port forwarding on your router!  The default port is 19132"
+
+# github user
+github_user="wertie3020"
+# github branch
+github_branch="master"
 
 # Randomizer for user agent
 RandNum=$(echo $((1 + $RANDOM % 5000)))
@@ -47,7 +52,7 @@ Update_Scripts() {
 
   # Download start.sh from repository
   echo "Grabbing start.sh from repository..."
-  curl -H "Accept-Encoding: identity" -L -o start.sh https://raw.githubusercontent.com/TheRemote/MinecraftBedrockServer/master/start.sh
+  curl -H "Accept-Encoding: identity" -L -o start.sh https://raw.githubusercontent.com/$github_user/MinecraftBedrockServer/$github_branch/start.sh
   chmod +x start.sh
   sed -i "s:dirname:$DirName:g" start.sh
   sed -i "s:servername:$ServerName:g" start.sh
@@ -56,7 +61,7 @@ Update_Scripts() {
 
   # Download stop.sh from repository
   echo "Grabbing stop.sh from repository..."
-  curl -H "Accept-Encoding: identity" -L -o stop.sh https://raw.githubusercontent.com/TheRemote/MinecraftBedrockServer/master/stop.sh
+  curl -H "Accept-Encoding: identity" -L -o stop.sh https://raw.githubusercontent.com/$github_user/MinecraftBedrockServer/$github_branch/stop.sh
   chmod +x stop.sh
   sed -i "s:dirname:$DirName:g" stop.sh
   sed -i "s:servername:$ServerName:g" stop.sh
@@ -65,7 +70,7 @@ Update_Scripts() {
 
   # Download restart.sh from repository
   echo "Grabbing restart.sh from repository..."
-  curl -H "Accept-Encoding: identity" -L -o restart.sh https://raw.githubusercontent.com/TheRemote/MinecraftBedrockServer/master/restart.sh
+  curl -H "Accept-Encoding: identity" -L -o restart.sh https://raw.githubusercontent.com/$github_user/MinecraftBedrockServer/$github_branch/restart.sh
   chmod +x restart.sh
   sed -i "s:dirname:$DirName:g" restart.sh
   sed -i "s:servername:$ServerName:g" restart.sh
@@ -74,7 +79,7 @@ Update_Scripts() {
 
   # Download fixpermissions.sh from repository
   echo "Grabbing fixpermissions.sh from repository..."
-  curl -H "Accept-Encoding: identity" -L -o fixpermissions.sh https://raw.githubusercontent.com/TheRemote/MinecraftBedrockServer/master/fixpermissions.sh
+  curl -H "Accept-Encoding: identity" -L -o fixpermissions.sh https://raw.githubusercontent.com/$github_user/MinecraftBedrockServer/$github_branch/fixpermissions.sh
   chmod +x fixpermissions.sh
   sed -i "s:dirname:$DirName:g" fixpermissions.sh
   sed -i "s:servername:$ServerName:g" fixpermissions.sh
@@ -83,7 +88,7 @@ Update_Scripts() {
 
   # Download revert.sh from repository
   echo "Grabbing revert.sh from repository..."
-  curl -H "Accept-Encoding: identity" -L -o revert.sh https://raw.githubusercontent.com/TheRemote/MinecraftBedrockServer/master/revert.sh
+  curl -H "Accept-Encoding: identity" -L -o revert.sh https://raw.githubusercontent.com/$github_user/MinecraftBedrockServer/$github_branch/revert.sh
   chmod +x revert.sh
   sed -i "s:dirname:$DirName:g" revert.sh
   sed -i "s:servername:$ServerName:g" revert.sh
@@ -92,12 +97,12 @@ Update_Scripts() {
 
   # Download update.sh from repository
   echo "Grabbing update.sh from repository..."
-  curl -H "Accept-Encoding: identity" -L -o update.sh https://raw.githubusercontent.com/TheRemote/MinecraftBedrockServer/master/update.sh
+  curl -H "Accept-Encoding: identity" -L -o update.sh https://raw.githubusercontent.com/$github_user/MinecraftBedrockServer/$github_branch/update.sh
   chmod +x update.sh
 
   # Download autocommand.sh from repository
   echo "Grabbing autocommand.sh from repository..."
-  curl -H "Accept-Encoding: identity" -L -o update.sh https://raw.githubusercontent.com/TheRemote/MinecraftBedrockServer/master/autocommand.sh
+  curl -H "Accept-Encoding: identity" -L -o autocommand.sh https://raw.githubusercontent.com/$github_user/MinecraftBedrockServer/$github_branch/autocommand.sh
   chmod +x autocommand.sh
   sed -i "s:dirname:$DirName:g" autocommand.sh
   sed -i "s:servername:$ServerName:g" autocommand.sh
@@ -109,7 +114,7 @@ Update_Scripts() {
 Update_Service() {
   # Update minecraft server service
   echo "Configuring Minecraft $ServerName service..."
-  sudo curl -H "Accept-Encoding: identity" -L -o /etc/systemd/system/$ServerName.service https://raw.githubusercontent.com/TheRemote/MinecraftBedrockServer/master/minecraftbe.service
+  sudo curl -H "Accept-Encoding: identity" -L -o /etc/systemd/system/$ServerName.service https://raw.githubusercontent.com/$github_user/MinecraftBedrockServer/$github_branch/minecraftbe.service
   sudo chmod +x /etc/systemd/system/$ServerName.service
   sudo sed -i "s:userxname:$UserName:g" /etc/systemd/system/$ServerName.service
   sudo sed -i "s:dirname:$DirName:g" /etc/systemd/system/$ServerName.service
@@ -244,7 +249,7 @@ Check_Architecture () {
     fi
 
     # Retrieve depends.zip from GitHub repository
-    curl -H "Accept-Encoding: identity" -L -o depends.zip https://raw.githubusercontent.com/TheRemote/MinecraftBedrockServer/master/depends.zip
+    curl -H "Accept-Encoding: identity" -L -o depends.zip https://raw.githubusercontent.com/$github_user/MinecraftBedrockServer/$github_branch/depends.zip
     unzip depends.zip
     sudo mkdir /lib64
     # Create soft link ld-linux-x86-64.so.2 mapped to ld-2.31.so
@@ -282,9 +287,9 @@ if [[ $(id -u) = 0 ]]; then
 fi
 
 if [ -e "SetupMinecraft.sh" ]; then
-  rm -f "SetupMinecraft.sh"
+  # rm -f "SetupMinecraft.sh"
   echo "Local copy of SetupMinecraft.sh running.  Exiting and running online version..."
-  curl https://raw.githubusercontent.com/TheRemote/MinecraftBedrockServer/master/SetupMinecraft.sh | bash
+  curl https://raw.githubusercontent.com/$github_user/MinecraftBedrockServer/$github_branch/SetupMinecraft.sh | bash
   exit 1
 fi
 
