@@ -1,5 +1,5 @@
 #!/bin/bash
-# wertie
+# Author: wertie
 # Minecraft Bedrock Server crach restart script
 # This script will check if the server is running. If not and no restart or stop has been performed, it will restart the server.
 

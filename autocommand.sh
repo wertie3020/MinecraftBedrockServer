@@ -1,5 +1,5 @@
 #!/bin/bash
-# wertie
+# Author: wertie
 # Minecraft Bedrock Server Auto Commands script
 
 # Set path variable
