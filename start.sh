@@ -183,4 +183,4 @@ screen -L -Logfile logs/servername.$(date +%Y.%m.%d.%H.%M.%S).log -dmS servernam
 ./autocommand.sh &
 
 # start crachrestart
-./cracherestart.sh &
+./crachrestart.sh &
