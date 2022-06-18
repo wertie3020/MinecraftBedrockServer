@@ -19,3 +19,15 @@ if [[ $(id -u) = 0 ]]; then
 fi
 
 echo "crach restart is started";
+
+# chek if server is running
+while screen -list | grep -q "\.servername"; do
+    
+    echo "server is running";
+
+    sleep 5;
+
+done
+echo "server crached restarting server now";
+# restart server
+./start.sh &
