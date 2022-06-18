@@ -48,7 +48,7 @@ function read_with_prompt {
 
 Update_Scripts() {
   # Remove existing scripts
-  rm -f start.sh stop.sh restart.sh fixpermissions.sh revert.sh autocommand.sh
+  rm -f start.sh stop.sh restart.sh fixpermissions.sh revert.sh autocommand.sh crachrestart.sh
 
   # Download start.sh from repository
   echo "Grabbing start.sh from repository..."
