@@ -5,7 +5,7 @@
 # Resource Pack Guide: https://jamesachambers.com/minecraft-bedrock-server-resource-pack-guide/
 #
 # To run the setup script use:
-# curl https://raw.githubusercontent.com/wertie3020/MinecraftBedrockServer/autocommand/SetupMinecraft.sh | bash
+# curl https://raw.githubusercontent.com/wertie3020/MinecraftBedrockServer/master/SetupMinecraft.sh | bash
 #
 # GitHub Repository: https://github.com/TheRemote/MinecraftBedrockServer
 
@@ -16,7 +16,7 @@ echo "Don't forget to set up port forwarding on your router!  The default port i
 # github user
 github_user="wertie3020"
 # github branch
-github_branch="crachrestart"
+github_branch="master"
 
 # Randomizer for user agent
 RandNum=$(echo $((1 + $RANDOM % 5000)))
@@ -295,12 +295,12 @@ if [[ $(id -u) = 0 ]]; then
    exit 1
 fi
 
-# if [ -e "SetupMinecraft.sh" ]; then
-#   rm -f "SetupMinecraft.sh"
-#   echo "Local copy of SetupMinecraft.sh running.  Exiting and running online version..."
-#   curl https://raw.githubusercontent.com/$github_user/MinecraftBedrockServer/$github_branch/SetupMinecraft.sh | bash
-#   exit 1
-# fi
+if [ -e "SetupMinecraft.sh" ]; then
+  rm -f "SetupMinecraft.sh"
+  echo "Local copy of SetupMinecraft.sh running.  Exiting and running online version..."
+  curl https://raw.githubusercontent.com/$github_user/MinecraftBedrockServer/$github_branch/SetupMinecraft.sh | bash
+  exit 1
+fi
 
 Check_Dependencies
 
