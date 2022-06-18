@@ -109,6 +109,15 @@ Update_Scripts() {
   sed -i "s:userxname:$UserName:g" autocommand.sh
   sed -i "s<pathvariable<$PATH<g" autocommand.sh
 
+  # Download crachrestart.sh from repository
+  echo "Grabbing crachrestart.sh from repository..."
+  curl -H "Accept-Encoding: identity" -L -o crachrestart.sh https://raw.githubusercontent.com/$github_user/MinecraftBedrockServer/$github_branch/crachrestart.sh
+  chmod +x crachrestart.sh
+  sed -i "s:dirname:$DirName:g" crachrestart.sh
+  sed -i "s:servername:$ServerName:g" crachrestart.sh
+  sed -i "s:userxname:$UserName:g" crachrestart.sh
+  sed -i "s<pathvariable<$PATH<g" crachrestart.sh
+
 }
 
 Update_Service() {
