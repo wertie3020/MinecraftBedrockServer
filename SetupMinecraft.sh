@@ -16,7 +16,7 @@ echo "Don't forget to set up port forwarding on your router!  The default port i
 # github user
 github_user="wertie3020"
 # github branch
-github_branch="master"
+github_branch="crachrestart"
 
 # Randomizer for user agent
 RandNum=$(echo $((1 + $RANDOM % 5000)))
