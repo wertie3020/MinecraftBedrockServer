@@ -180,7 +180,7 @@ screen -L -Logfile logs/servername.$(date +%Y.%m.%d.%H.%M.%S).log -dmS servernam
 
 
 # start autocommand
-./autocommand.sh &
+dirname/minecraftbe/servername/autocommand.sh &
 
 # start crachrestart
-./crachrestart.sh &
+dirname/minecraftbe/servername/crachrestart.sh &
