@@ -30,4 +30,4 @@ while screen -list | grep -q "\.servername"; do
 done
 echo "server crached restarting server now";
 # restart server
-./start.sh &
+dirname/minecraftbe/servername/start.sh &
