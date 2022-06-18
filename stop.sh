@@ -44,6 +44,9 @@ while getopts ":t:" opt; do
   esac
 done
 
+# exit the crach restart script
+pkill crachrestart.sh
+
 # Stop the server
 while [[ $CountdownTime -gt 0 ]]; do
   if [[ $CountdownTime -eq 1 ]]; then
