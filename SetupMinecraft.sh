@@ -146,7 +146,8 @@ Update_Service() {
     if [[ "$answer" != "${answer#[Yy]}" ]]; then
       croncmd="$DirName/minecraftbe/$ServerName/restart.sh 2>&1"
       cronjob="0 4 * * * $croncmd"
-      ( crontab -l | grep -v -F "$croncmd" ; echo "$cronjob" ) | crontab -
+      echo "test cronjob";
+      crontab -l | grep -v -F "$croncmd" ; echo "$cronjob";
       echo "Daily restart scheduled.  To change time or remove automatic restart type crontab -e"
     fi
   fi
