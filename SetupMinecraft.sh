@@ -144,11 +144,11 @@ Update_Service() {
     echo -n "Automatically restart and backup server at 4am daily (y/n)?"
     read answer < /dev/tty
     if [[ "$answer" != "${answer#[Yy]}" ]]; then
-      croncmd="$DirName/minecraftbe/$ServerName/restart.sh 2>&1"
-      cronjob="0 4 * * * $croncmd"
+      croncmd="$DirName/minecraftbe/$ServerName/restart.sh 2>&1";
+      cronjob="0 4 * * * $croncmd";
       echo "test cronjob";
       crontab -l | grep -v -F "$croncmd" ; echo "$cronjob";
-      echo "Daily restart scheduled.  To change time or remove automatic restart type crontab -e"
+      echo "Daily restart scheduled.  To change time or remove automatic restart type crontab -e";
     fi
   fi
 }
