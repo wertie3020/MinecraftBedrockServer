@@ -23,7 +23,7 @@ echo "crach restart is started";
 # chek if server is running
 while screen -list | grep -q "\.servername"; do
     
-    echo "server is running";
+    # echo "server is running";
 
     sleep 5;
 
