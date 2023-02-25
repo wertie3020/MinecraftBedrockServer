@@ -7,10 +7,10 @@
 # To run the setup script use:
 # curl https://raw.githubusercontent.com/wertie3020/MinecraftBedrockServer/master/SetupMinecraft.sh | bash
 #
-# GitHub Repository: https://github.com/TheRemote/MinecraftBedrockServer
+# GitHub Repository: https://github.com/wertie3020/MinecraftBedrockServer
 
 echo "Minecraft Bedrock Server installation script by James A. Chambers"
-echo "Latest version always at https://github.com/TheRemote/MinecraftBedrockServer"
+echo "Latest version always at https://github.com/wertie3020/MinecraftBedrockServer"
 echo "Don't forget to set up port forwarding on your router!  The default port is 19132"
 
 # github user
