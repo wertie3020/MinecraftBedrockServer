@@ -21,6 +21,15 @@ github_branch="master"
 # Randomizer for user agent
 RandNum=$(echo $((1 + $RANDOM % 5000)))
 
+# You can override this for a custom installation directory but I only recommend it if you are using a separate drive for the server
+# It is meant to point to the root folder that holds all servers
+# For example if you had a separate drive mounted at /newdrive you would use DirName='/newdrive' for all servers
+# The servers will be separated by their name/label into folders
+DirName=$(readlink -e ~)
+if [ -z "$DirName" ]; then
+  DirName=~
+fi
+
 # Function to read input from user with a prompt
 function read_with_prompt {
   variable_name="$1"
@@ -32,8 +41,13 @@ function read_with_prompt {
     if [ ! -n "`which xargs`" ]; then
       declare -g $variable_name=$(echo "${!variable_name}" | xargs)
     fi
+<<<<<<< HEAD
     declare -g $variable_name=$(echo "${!variable_name}" | head -n1 | awk '{print $1;}')
     if [[ -z ${!variable_name} ]] && [[ -n "$default" ]] ; then
+=======
+    declare -g $variable_name=$(echo "${!variable_name}" | head -n1 | awk '{print $1;}' | tr -cd '[a-zA-Z0-9]._-')
+    if [[ -z ${!variable_name} ]] && [[ -n "$default" ]]; then
+>>>>>>> upstream/master
       declare -g $variable_name=$default
     fi
     echo -n "$prompt : ${!variable_name} -- accept (y/n)?"
@@ -95,6 +109,15 @@ Update_Scripts() {
   sed -i "s:userxname:$UserName:g" revert.sh
   sed -i "s<pathvariable<$PATH<g" revert.sh
 
+  # Download clean.sh from repository
+  echo "Grabbing clean.sh from repository..."
+  curl -H "Accept-Encoding: identity" -L -o clean.sh https://raw.githubusercontent.com/TheRemote/MinecraftBedrockServer/master/clean.sh
+  chmod +x clean.sh
+  sed -i "s:dirname:$DirName:g" clean.sh
+  sed -i "s:servername:$ServerName:g" clean.sh
+  sed -i "s:userxname:$UserName:g" clean.sh
+  sed -i "s<pathvariable<$PATH<g" clean.sh
+
   # Download update.sh from repository
   echo "Grabbing update.sh from repository..."
   curl -H "Accept-Encoding: identity" -L -o update.sh https://raw.githubusercontent.com/$github_user/MinecraftBedrockServer/$github_branch/update.sh
@@ -128,8 +151,11 @@ Update_Service() {
   sudo sed -i "s:userxname:$UserName:g" /etc/systemd/system/$ServerName.service
   sudo sed -i "s:dirname:$DirName:g" /etc/systemd/system/$ServerName.service
   sudo sed -i "s:servername:$ServerName:g" /etc/systemd/system/$ServerName.service
-  sed -i "/server-port=/c\server-port=$PortIPV4" server.properties
-  sed -i "/server-portv6=/c\server-portv6=$PortIPV6" server.properties
+  if [ -e server.properties ]; then
+    sed -i "/server-port=/c\server-port=$PortIPV4" server.properties
+    sed -i "/server-portv6=/c\server-portv6=$PortIPV6" server.properties
+  fi
+
   sudo systemctl daemon-reload
   
   echo -n "Start Minecraft server at startup automatically (y/n)?"
@@ -161,7 +187,7 @@ Check_Dependencies() {
   # Install dependencies required to run Minecraft server in the background
   if command -v apt-get &> /dev/null; then
     echo "Updating apt.."
-    sudo apt-get update
+    sudo DEBIAN_FRONTEND=noninteractive apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade -yqq
 
     echo "Checking and installing dependencies.."
     if ! command -v curl &> /dev/null; then sudo DEBIAN_FRONTEND=noninteractive apt-get install curl -yqq; fi
@@ -182,6 +208,10 @@ Check_Dependencies() {
       if [[ "$CurlVer" ]]; then sudo DEBIAN_FRONTEND=noninteractive apt-get install libcurl3 -yqq; fi
     fi
 
+    # Install libssl3 dependency as Bedrock server is linking to both
+    CurlVer=$(apt-cache show libssl3 | grep Version | awk 'NR==1{ print $2 }')
+    if [[ "$CurlVer" ]]; then sudo DEBIAN_FRONTEND=noninteractive apt-get install libssl3 -yqq; fi
+
     sudo DEBIAN_FRONTEND=noninteractive apt-get install libc6 -yqq
     sudo DEBIAN_FRONTEND=noninteractive apt-get install libcrypt1 -yqq
 
@@ -193,8 +223,8 @@ Check_Dependencies() {
       CPUArch=$(uname -m)
       if [[ "$CPUArch" == *"x86_64"* ]]; then
         echo "No libssl1.1 available in repositories -- attempting manual install"
-        
-        sudo curl -o libssl.deb -k -L http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1l-1ubuntu1.3_amd64.deb
+
+        sudo curl -o libssl.deb -k -L https://github.com/TheRemote/Legendary-Bedrock-Container/raw/main/libssl1-1.deb
         sudo dpkg -i libssl.deb
         sudo rm libssl.deb
         SSLVer=$(apt-cache show libssl1.1 | grep Version | awk 'NR==1{ print $2 }')
@@ -237,17 +267,27 @@ Check_Architecture () {
   echo "System Architecture: $CPUArch"
 
   # Check for ARM architecture
-  if [[ "$CPUArch" == *"aarch"* || "$CPUArch" == *"arm"* ]]; then
+  if [[ "$CPUArch" == *"aarch"* ]]; then
     # ARM architecture detected -- download QEMU and dependency libraries
-    echo "ARM platform detected -- installing dependencies..."
+    echo "aarch64 platform detected -- installing box64..."
+    GetList=$(sudo curl -k -L -o /etc/apt/sources.list.d/box64.list https://ryanfortner.github.io/box64-debs/box64.list)
+    GetKey=$(sudo curl -k -L https://ryanfortner.github.io/box64-debs/KEY.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/box64-debs-archive-keyring.gpg)
+    sudo DEBIAN_FRONTEND=noninteractive apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install box64 -y
+
+    if [ -n "$(which box64)" ]; then
+      echo "box64 installed successfully"
+    else
+      echo "box64 did not install successfully -- please check the above output to see what went wrong."
+    fi
 
     # Check if latest available QEMU version is at least 3.0 or higher
+    echo "Installing QEMU..."
     QEMUVer=$(apt-cache show qemu-user-static | grep Version | awk 'NR==1{ print $2 }' | cut -c3-3)
     if [[ "$QEMUVer" -lt "3" ]]; then
       echo "Available QEMU version is not high enough to emulate x86_64.  Please update your QEMU version."
-      exit
+      exit 1
     else
-      sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install qemu-user-static binfmt-support -yqq
+      sudo DEBIAN_FRONTEND=noninteractive apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install qemu-user-static binfmt-support -yqq
     fi
 
     if [ -n "`which qemu-x86_64-static`" ]; then
@@ -261,9 +301,41 @@ Check_Architecture () {
     curl -H "Accept-Encoding: identity" -L -o depends.zip https://raw.githubusercontent.com/$github_user/MinecraftBedrockServer/$github_branch/depends.zip
     unzip depends.zip
     sudo mkdir /lib64
-    # Create soft link ld-linux-x86-64.so.2 mapped to ld-2.31.so
+    # Create soft link ld-linux-x86-64.so.2 mapped to ld-2.31.so, ld-2.33.so, ld-2,35.so
     sudo rm -rf /lib64/ld-linux-x86-64.so.2
     sudo ln -s $DirName/minecraftbe/$ServerName/ld-2.31.so /lib64/ld-linux-x86-64.so.2
+    sudo ln -s $DirName/minecraftbe/$ServerName/ld-2.33.so /lib64/ld-linux-x86-64.so.2
+    sudo ln -s $DirName/minecraftbe/$ServerName/ld-2.35.so /lib64/ld-linux-x86-64.so.2
+  elif [[ "$CPUArch" == *"arm"* ]]; then
+    # ARM architecture detected -- download QEMU and dependency libraries
+    echo "WARNING: ARM 32 platform detected -- This is not recommended.  64 bit ARM (aarch64) can use Box64 for emulation.  It is recommended to upgrade to a 64 bit OS."
+    echo "Installing dependencies..."
+
+    # Check if latest available QEMU version is at least 3.0 or higher
+    QEMUVer=$(apt-cache show qemu-user-static | grep Version | awk 'NR==1{ print $2 }' | cut -c3-3)
+    if [[ "$QEMUVer" -lt "3" ]]; then
+      echo "Available QEMU version is not high enough to emulate x86_64.  Please update your QEMU version."
+      exit
+    else
+      sudo DEBIAN_FRONTEND=noninteractive apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install qemu-user-static binfmt-support -yqq
+    fi
+
+    if [ -n "$(which qemu-x86_64-static)" ]; then
+      echo "QEMU-x86_64-static installed successfully"
+    else
+      echo "QEMU-x86_64-static did not install successfully -- please check the above output to see what went wrong."
+      exit 1
+    fi
+
+    # Retrieve depends.zip from GitHub repository
+    curl -H "Accept-Encoding: identity" -L -o depends.zip https://raw.githubusercontent.com/TheRemote/MinecraftBedrockServer/master/depends.zip
+    unzip depends.zip
+    sudo mkdir /lib64
+    # Create soft link ld-linux-x86-64.so.2 mapped to ld-2.31.so, ld-2.33.so, ld-2,35.so
+    sudo rm -rf /lib64/ld-linux-x86-64.so.2
+    sudo ln -s $DirName/minecraftbe/$ServerName/ld-2.31.so /lib64/ld-linux-x86-64.so.2
+    sudo ln -s $DirName/minecraftbe/$ServerName/ld-2.33.so /lib64/ld-linux-x86-64.so.2
+    sudo ln -s $DirName/minecraftbe/$ServerName/ld-2.35.so /lib64/ld-linux-x86-64.so.2
   fi
 
   # Check for x86 (32 bit) architecture
@@ -304,17 +376,6 @@ fi
 
 Check_Dependencies
 
-# Get directory path (default ~)
-until [ -d "$DirName" ]
-do
-  echo "Enter root installation path for Minecraft BE (this is the same for ALL servers and should be ~, the subfolder will be chosen from the server name you provide). Almost nobody should change this unless you're installing to a different disk altogether. (default ~): "
-  read_with_prompt DirName "Directory Path" ~
-  DirName=$(eval echo "$DirName")
-  if [ ! -d "$DirName" ]; then
-    echo "Invalid directory.  Please use the default path of ~ or you're going to have errors.  This should be the same for ALL servers as it is your ROOT install directory."
-  fi
-done
-
 # Check to see if Minecraft server main directory already exists
 cd $DirName
 if [ ! -d "minecraftbe" ]; then
@@ -338,6 +399,9 @@ echo "Enter a short one word label for a new or existing server (don't use minec
 echo "It will be used in the folder name and service name..."
 
 read_with_prompt ServerName "Server Label"
+
+# Remove non-alphanumeric characters from ServerName
+ServerName=$(echo "$ServerName" | tr -cd '[a-zA-Z0-9]._-')
 
 if [[ "$ServerName" == *"minecraftbe"* ]]; then
   echo "Server label of minecraftbe is not allowed.  Please choose a different server label!"
@@ -412,10 +476,10 @@ echo "Setup is complete.  Starting Minecraft server. To view the console use the
 sudo systemctl daemon-reload
 sudo systemctl start $ServerName.service
 
-# Wait up to 20 seconds for server to start
+# Wait up to 30 seconds for server to start
 StartChecks=0
-while [[ $StartChecks -lt 20 ]]; do
-  if screen -list | grep -q "\.$ServerName"; then
+while [[ $StartChecks -lt 30 ]]; do
+  if screen -list | grep -q "\.$ServerName\s"; then
     break
   fi
   sleep 1;

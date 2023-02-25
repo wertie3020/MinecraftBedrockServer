@@ -18,7 +18,7 @@ if [[ $(id -u) = 0 ]]; then
 fi
 
 # Randomizer for user agent
-RandNum=$(echo $((1 + $RANDOM % 5000)))
+RandNum=$((1 + $RANDOM % 5000))
 
 # Check if server is already started
 ScreenWipe=$(screen -wipe 2>&1)
@@ -89,7 +89,7 @@ Rotate=$(
 echo "Checking for the latest version of Minecraft Bedrock server ..."
 
 # Test internet connectivity first
-curl -H "Accept-Encoding: identity" -H "Accept-Language: en" -L -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.$RandNum.212 Safari/537.36" -s google.com -o /dev/null
+curl -H "Accept-Encoding: identity" -H "Accept-Language: en" -L -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.$RandNum.212 Safari/537.36" -s https://www.minecraft.net/ -o /dev/null
 if [ "$?" != 0 ]; then
     echo "Unable to connect to update website (internet connection may be down).  Skipping update ..."
 else
@@ -160,17 +160,34 @@ fi
 
 if [ ! -e dirname/minecraftbe/servername/allowlist.json ]; then
     echo "Creating default allowlist.json..."
-    echo '[]' > dirname/minecraftbe/servername/allowlist.json
+    echo '[]' >dirname/minecraftbe/servername/allowlist.json
 fi
 if [ ! -e dirname/minecraftbe/servername/permissions.json ]; then
     echo "Creating default permissions.json..."
-    echo '[]' > dirname/minecraftbe/servername/permissions.json
+    echo '[]' >dirname/minecraftbe/servername/permissions.json
+fi
+ContentLogging=$(grep "content-log-file-enabled" dirname/minecraftbe/servername/server.properties)
+if [ -z "$ContentLogging" ]; then
+    echo "" >> dirname/minecraftbe/servername/server.properties
+    echo "content-log-file-enabled=true" >> dirname/minecraftbe/servername/server.properties
+    echo "# Enables logging content errors to a file" >> dirname/minecraftbe/servername/server.properties
 fi
 
 echo "Starting Minecraft server.  To view window type screen -r servername"
 echo "To minimize the window and let the server run in the background, press Ctrl+A then Ctrl+D"
 
-BASH_CMD="LD_LIBRARY_PATH=dirname/minecraftbe/servername dirname/minecraftbe/servername/bedrock_server"
+CPUArch=$(uname -m)
+if [[ "$CPUArch" == *"aarch64"* ]]; then
+    cd dirname/minecraftbe/servername
+    if [ -n "$(which box64)" ]; then
+        BASH_CMD="box64 bedrock_server"
+    else
+        BASH_CMD="LD_LIBRARY_PATH=dirname/minecraftbe/servername dirname/minecraftbe/servername/bedrock_server"
+    fi
+else
+    BASH_CMD="LD_LIBRARY_PATH=dirname/minecraftbe/servername dirname/minecraftbe/servername/bedrock_server"
+fi
+
 if command -v gawk &>/dev/null; then
     BASH_CMD+=$' | gawk \'{ print strftime(\"[%Y-%m-%d %H:%M:%S]\"), $0 }\''
 else

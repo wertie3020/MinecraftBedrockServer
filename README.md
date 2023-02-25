@@ -2,10 +2,10 @@
 
 [日本語版 README はこちら](https://github.com/TheRemote/MinecraftBedrockServer/blob/master/README_jp.md)
 
-Sets up a Minecraft Bedrock dedicated server on Ubuntu / Debian with options for automatic updates, backups and running automatically at startup<br>
+Sets up a Minecraft Bedrock dedicated server on Ubuntu / Debian with options for automatic updates, backups and running automatically at startup.<br>
 View installation instructions at: https://jamesachambers.com/minecraft-bedrock-edition-ubuntu-dedicated-server-guide/<br>
 <br>
-If you are looking for a Docker containerized version of the Minecraft Bedrock Dedicated Server it is available here:  <a href="https://github.com/TheRemote/Legendary-Bedrock-Container">https://github.com/TheRemote/Legendary-Bedrock-Container</a>
+If you are looking for a Docker containerized version of the Minecraft Bedrock Dedicated Server, it is available here:  <a href="https://github.com/TheRemote/Legendary-Bedrock-Container">https://github.com/TheRemote/Legendary-Bedrock-Container</a>
 
 <h2>Features</h2>
 <ul>
@@ -19,6 +19,7 @@ If you are looking for a Docker containerized version of the Minecraft Bedrock D
   <li>Easy control of server with start.sh, stop.sh and restart.sh scripts</li>
   <li>Adds logging with timestamps to "logs" directory</li>
   <li>Optional scheduled daily restart of server using cron</li>
+  <li>*NEW* Box64 support for 64 bit ARM (aarch64) which greatly improves emulation speed over QEMU by translating some system calls to native system calls</li>
 </ul>
 
 <h2>Quick Installation Instuctions</h2>
@@ -29,7 +30,7 @@ To run the installation type:<br>
 <a href="https://jamesachambers.com/minecraft-bedrock-edition-ubuntu-dedicated-server-guide/">Minecraft Bedrock Dedicated Server Script Installation / Configuration Guide</a>
 
 <h2>Installing Resource Packs / RTX Support</h2>
-<p>For instructions on how to install resource packs (including optional RTX support) view my <a href="https://jamesachambers.com/minecraft-bedrock-server-resource-pack-guide/" target="_blank" rel="noopener">step by step Minecraft Bedrock Dedicated Server Resource Packs / Optional RTX guide here</a>.</p>
+<p>For instructions on how to install resource packs (including optional RTX support), view my <a href="https://jamesachambers.com/minecraft-bedrock-server-resource-pack-guide/" target="_blank" rel="noopener">step-by-step Minecraft Bedrock Dedicated Server Resource Packs / Optional RTX guide here</a>.</p>
 
 <h2>Tested Distributions</h2>
 <ul>
@@ -45,24 +46,51 @@ To run the installation type:<br>
  <li><a href="https://jamesachambers.com/udoo-x86-microboard-breakdown/">Udoo X86 (WORKING)</a></li>
  <li><a href="https://jamesachambers.com/install-ubuntu-server-18-04-on-intel-compute-stick-guide/">Intel Compute Stick (WORKING)</a></li>
  <li>Other X86_64 platforms (WORKING)</li>
-  <ul><li>ARM 64bit (WORKING -- needs linker and other binaries used for emulation to be updated)</li>
+  <ul><li>ARM 64bit (WORKING -- speed improved with Box64)</li>
     <ul>
-      <li>Raspberry Pi (WORKING, SLOW, Ubuntu required, not working on Pi OS 64 bit and has segfaults)</li>
-      <li>Tinkerboard (WORKING, SLOW)</li>
+      <li>Raspberry Pi 64 bit (WORKING -- Box64)</li>
+      <li>Raspberry Pi 32 bit (WORKING -- VERY SLOW -- 64 bit recommended!)</li>
+      <li>Tinkerboard (WORKING, 32 bit is slow, 64 bit uses Box64)</li>
     </ul>
   </ul>
 </ul>
 
 <h2>Multiple Servers and Installation Paths</h2>
-<p>The server supports multiple servers at once.  When you run SetupMinecraft.sh again pick the identical root path as any previous servers.  The path structure of the scripts is $ROOTPATH/minecraftbe/yourservername which is why the "root" path SetupMinecraft.sh asks you for should always be the same.</p>
-<p>The individual server folder is determined by the "server name" you enter for your server.  If it's an existing server the scripts will be safely updated.  If it's a new server then a new folder will be created under $ROOTPATH/minecraftbe/newservername.</p>
-<p>Keep the installation the path the same for all servers and the script will manage all this for you.</p>
+<p>The server supports multiple servers at once.  When you run SetupMinecraft.sh again, pick the identical root path as any previous servers.  The path structure of the scripts is $ROOTPATH/minecraftbe/yourservername, which is why the "root" path SetupMinecraft.sh asks you for should always be the same.</p>
+<p>The individual server folder is determined by the "server name" you enter for your server.  If it's an existing server, the scripts will be safely updated.  If it's a new server, then a new folder will be created under $ROOTPATH/minecraftbe/newservername.</p>
+<p>Keep the installation path the same for all servers and the script will manage all this for you.</p>
 
 <h2>Version Override</h2>
 You can revert to a previous version with the revert.sh script included in your directory like this: <pre>./revert.sh
 Set previous version in version_pin.txt: bedrock-server-1.19.10.20.zip</pre>
-If you have a specific version you would like to run you can also create version_pin.txt yourself like this: <pre>echo "bedrock-server-1.18.33.02.zip" > version_pin.txt</pre>
+If you have a specific version you would like to run, you can also create version_pin.txt yourself like this: <pre>echo "bedrock-server-1.18.33.02.zip" > version_pin.txt</pre>
 The version hold can be removed by deleting version_pin.txt.  This will allow it to update to the latest version again!
+
+<h2>Troubleshooting Note - Oracle Virtual Machines</h2>
+A very common problem people have with the Oracle Virtual Machine tutorials out there that typically show you how to use a free VM is that the VM is much more difficult to configure than just about any other product / offering out there.<br>
+The symptom you will have is that nobody will be able to connect.  This is not because of the second set of ports that it shows after startup (that is a nearly 3-4 years now old Bedrock bug and all servers do it).<br>
+It is because there are several steps you need to take to open the ports on the Oracle VM.  You need to both:<br>
+<ul>
+  <li>Set the ingress ports (TCP/UDP) in the Virtual Cloud Network (VCN) security list</li>
+  <li>*and* set the ingress ports in a Network Security Group assigned to your instance</li>
+</ul><br>
+Both of these settings are typically required before you will be able to connect to your VM instance.  This is purely configuration related and has nothing to do with the script or the Minecraft server itself.<br><br>
+I do not recommend this platform due to the configuration difficulty but the people who have gone through the pain of configuring an Oracle VM have had good experiences with it after that point.  Just keep in mind it's going to be a rough ride through the configuration for most people.<br><br>
+Here are some additional links:<br>
+<ul>
+<li>https://jamesachambers.com/official-minecraft-bedrock-dedicated-server-on-raspberry-pi/comment-page-8/#comment-13946</li>
+<li>https://jamesachambers.com/minecraft-bedrock-edition-ubuntu-dedicated-server-guide/comment-page-53/#comment-13936</li>
+<li>https://jamesachambers.com/minecraft-bedrock-edition-ubuntu-dedicated-server-guide/comment-page-49/#comment-13377</li>
+<li>https://jamesachambers.com/legendary-minecraft-bedrock-container/comment-page-2/#comment-13706</li>
+</ul>
+
+<h2>Troubleshooting Note - Hyper-V</h2>
+There is a weird bug in Hyper-V that breaks UDP connections on the Minecraft server.  The fix for this is that you have to use a Generation 1 VM with the Legacy LAN network driver.<br>
+See the following links:<br>
+<ul>
+<li>https://jamesachambers.com/minecraft-bedrock-edition-ubuntu-dedicated-server-guide/comment-page-54/#comment-13863</li>
+<li>https://jamesachambers.com/minecraft-bedrock-edition-ubuntu-dedicated-server-guide/comment-page-56/#comment-14207</li>
+</ul>
 
 <h2>Buy A Coffee / Donate</h2>
 <p>People have expressed some interest in this (you are all saints, thank you, truly)</p>
@@ -75,6 +103,64 @@ The version hold can be removed by deleting version_pin.txt.  This will allow it
 
 <h2>Update History</h2>
 <ul>
+  <li>January 14th 2023</li>
+  <ul>
+    <li>Change connectivity check from google.com to minecraft.net to prevent blocking in some countries</li>
+  </ul>
+  <li>September 4th 2022</li>
+  <ul>
+    <li>Remove unnecessary code from fixpermissions.sh</li>
+  </ul>
+  <li>August 12th 2022</li>
+  <ul>
+    <li>Add clean.sh utility script to clean up downloads folder, remove version pinning and force reinstall of current version</li>
+    <li>Enable content log by default which shows errors related to resource/behavior packs</li>
+  </ul>
+  <li>August 12th 2022</li>
+  <ul>
+    <li>Add clean.sh utility script to clean up downloads folder, remove version pinning and force reinstall of current version</li>
+    <li>Enable content log by default which shows errors related to resource/behavior packs</li>
+  </ul>
+  <li>August 10th 2022</li>
+  <ul>
+    <li>Moved DirName variable to a custom variable at the top of SetupMinecraft.sh</li>
+  </ul>
+  <li>August 4th 2022</li>
+  <ul>
+    <li>Script now removes non-alphanumeric characters from the servername variable (to prevent using quotes and other symbols that will break it)</li>
+  </ul>
+  <li>August 2nd 2022</li>
+    <ul>
+      <li>Add Box64 support for 64 bit ARM (aarch64).  32 bit ARM is not recommended as it cannot use Box64 so it will be much slower than if you install a 64-bit version of your OS on the device.</li>
+      <li>You must be running a 64-bit OS to benefit from the Box64 increased speeds (both Ubuntu and Raspberry Pi OS have 64-bit versions)</li>
+      <li>An easy way to check and make sure you are running 64 bit is to use <pre>uname -m</pre> which will return "aarch64" if you are on 64-bit ARM</li>
+    </ul>
+  <li>July 24th 2022</li>
+    <ul>
+        <li>Use libssl1.1 from repository instead of Ubuntu servers due to it changing every week or two (thanks theblujuice, <a href="https://github.com/TheRemote/MinecraftBedrockServer/issues/129">issue #129)</a></li>
+    </ul>
+  <li>July 21st 2022</li>
+    <ul>
+        <li>Increase timeout in minecraftbe.service to help servers with longer backup times from having startup issues</li>
+    </ul>
+  <li>July 19th 2022</li>
+    <ul>
+        <li>Fix minor syntax error in update.sh</li>
+    </ul>
+  <li>July 14th 2022</li>
+    <ul>
+        <li>Fix syntax error in new libssl3 install</li>
+        <li>Updated depends.zip for ARM devices (the Docker version is strongly recommended for ARM devices)</li>
+    </ul>
+  <li>July 14th 2022</li>
+    <ul>
+        <li>Add libssl3 to dependencies</li>
+    </ul>
+  <li>July 7th 2022</li>
+    <ul>
+        <li>Updated curl fallback installation URL to newest package</li>
+        <li>Punctuation / grammar fixes to README (thanks TheWilbo, <a href="https://github.com/TheRemote/MinecraftBedrockServer/pull/128">pull request #128)</a></li>
+    </ul>
   <li>June 11th 2022</li>
     <ul>
         <li>Added allowlist.json and permissions.json default template files to prevent crashes when they are missing (thanks Eike)</li>
