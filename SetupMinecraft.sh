@@ -41,13 +41,8 @@ function read_with_prompt {
     if [ ! -n "`which xargs`" ]; then
       declare -g $variable_name=$(echo "${!variable_name}" | xargs)
     fi
-<<<<<<< HEAD
-    declare -g $variable_name=$(echo "${!variable_name}" | head -n1 | awk '{print $1;}')
-    if [[ -z ${!variable_name} ]] && [[ -n "$default" ]] ; then
-=======
     declare -g $variable_name=$(echo "${!variable_name}" | head -n1 | awk '{print $1;}' | tr -cd '[a-zA-Z0-9]._-')
     if [[ -z ${!variable_name} ]] && [[ -n "$default" ]]; then
->>>>>>> upstream/master
       declare -g $variable_name=$default
     fi
     echo -n "$prompt : ${!variable_name} -- accept (y/n)?"
